@@ -31,7 +31,7 @@ describe('Node.js LMDB Bindings', function() {
     var env = new lmdb.Env();
     env.open({
       path: testDirPath,
-      maxDbs: 10
+      maxDbs: 12
     });
     env.close.should.be.a('function');
     env.beginTxn.should.be.a('function');
@@ -45,7 +45,7 @@ describe('Node.js LMDB Bindings', function() {
       env = new lmdb.Env();
       env.open({
         path: testDirPath,
-        maxDbs: 10
+        maxDbs: 12
       });
     });
     after(function() {
@@ -92,7 +92,7 @@ describe('Node.js LMDB Bindings', function() {
       env = new lmdb.Env();
       env.open({
         path: testDirPath,
-        maxDbs: 10
+        maxDbs: 12
       });
       dbi = env.openDbi({
         name: 'mydb3',
@@ -152,7 +152,7 @@ describe('Node.js LMDB Bindings', function() {
       env = new lmdb.Env();
       env.open({
         path: testDirPath,
-        maxDbs: 10
+        maxDbs: 12
       });
       dbi = env.openDbi({
         name: 'mydb4',
@@ -209,7 +209,7 @@ describe('Node.js LMDB Bindings', function() {
       env = new lmdb.Env();
       env.open({
         path: testDirPath,
-        maxDbs: 10,
+        maxDbs: 12,
         mapSize: 16 * 1024 * 1024 * 1024
       });
       dbi = env.openDbi({
@@ -273,6 +273,46 @@ describe('Node.js LMDB Bindings', function() {
       txn.abort();
     });
   });
+  describe('Keys', function() {
+    var env;
+    var dbi;
+    var expectedKey = new Buffer('822285ee315d2b04', 'hex');
+    var expectedValue = new Buffer('ec65d632d9168c33350ed31a30848d01e95172931e90984c218ef6b08c1fa90a', 'hex');
+    before(function() {
+      env = new lmdb.Env();
+      env.open({
+        path: testDirPath,
+        maxDbs: 12,
+        mapSize: 16 * 1024 * 1024 * 1024
+      });
+      dbi = env.openDbi({
+        name: 'testkeys',
+        create: true
+      });
+      var txn = env.beginTxn();
+      txn.putBinary(dbi, expectedKey.toString('hex'), expectedValue);
+      txn.commit();
+    });
+    after(function() {
+      dbi.close();
+      env.close();
+    });
+    it('will be able to convert key to buffer', function(done) {
+      var txn = env.beginTxn();
+      var cursor = new lmdb.Cursor(txn, dbi);
+      cursor.goToFirst();
+      cursor.getCurrentBinary(function(key, value) {
+        console.log(key);
+        var keyBuffer = new Buffer(key, 'hex');
+        console.log(keyBuffer);
+        cursor.close();
+        txn.abort();
+        keyBuffer.compare(expectedKey).should.equal(0);
+        value.compare(expectedValue).should.equal(0);
+        done();
+      });
+    });
+  });
   describe('Cluster', function() {
     it('will run a cluster of processes with read-only transactions', function(done) {
       var child = spawn('node', [path.resolve(__dirname, './cluster')]);
@@ -296,7 +336,7 @@ describe('Node.js LMDB Bindings', function() {
       env = new lmdb.Env();
       env.open({
         path: testDirPath,
-        maxDbs: 10,
+        maxDbs: 12,
         mapSize: 16 * 1024 * 1024 * 1024
       });
       dbi = env.openDbi({
@@ -345,7 +385,7 @@ describe('Node.js LMDB Bindings', function() {
       env = new lmdb.Env();
       env.open({
         path: testDirPath,
-        maxDbs: 10,
+        maxDbs: 12,
         mapSize: 16 * 1024 * 1024 * 1024
       });
       dbi = env.openDbi({
