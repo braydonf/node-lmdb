@@ -166,8 +166,10 @@ NAN_METHOD(EnvWrap::beginTxn) {
 
     const unsigned argc = 2;
 
+    Local<Context> context = Isolate::GetCurrent()->GetCurrentContext();
+
     Local<Value> argv[argc] = { info.This(), info[0] };
-    Local<Object> instance = Nan::New(txnCtor)->NewInstance(argc, argv);
+    Local<Object> instance = Nan::New(txnCtor)->NewInstance(context, argc, argv).ToLocalChecked();
 
     info.GetReturnValue().Set(instance);
 }
@@ -176,8 +178,11 @@ NAN_METHOD(EnvWrap::openDbi) {
     Nan::HandleScope scope;
 
     const unsigned argc = 2;
+
+    Local<Context> context = Isolate::GetCurrent()->GetCurrentContext();
+
     Local<Value> argv[argc] = { info.This(), info[0] };
-    Local<Object> instance = Nan::New(dbiCtor)->NewInstance(argc, argv);
+    Local<Object> instance = Nan::New(dbiCtor)->NewInstance(context, argc, argv).ToLocalChecked();
 
     info.GetReturnValue().Set(instance);
 }
